@@ -151,9 +151,14 @@ export const registerUserApi = (data: TRegisterData) =>
     },
     body: JSON.stringify(data)
   })
-    .then((res) => checkResponse<TAuthResponse>(res))
+    .then((res) => {
+      console.log('registerUserApi: статус ответа', res.status);
+      return checkResponse<TAuthResponse>(res);
+    })
     .then((data) => {
+      console.log('registerUserApi: данные ответа', data);
       if (data?.success) return data;
+      console.error('registerUserApi: success = false', data);
       return Promise.reject(data);
     });
 

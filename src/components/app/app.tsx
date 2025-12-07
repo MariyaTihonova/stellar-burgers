@@ -11,11 +11,15 @@ import {
   Profile,
   ProfileOrders,
   NotFound404
-} from '@pages';
-import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
+} from '../../pages';
+import { AppHeader } from '../app-header';
+import { IngredientDetails } from '../ingredient-details';
+import { Modal } from '../modal';
+import { OrderInfo } from '../order-info';
 import { getIngredients } from '../../services/slices/ingredientsSlice';
 import { checkUserAuth } from '../../services/slices/userSlice';
 import ProtectedRoute from '../protected-route/protected-route';
+import { getCookie } from '../../utils/cookie';
 import '../../index.css';
 import styles from './app.module.css';
 
@@ -36,8 +40,16 @@ const App = () => {
         console.error('Ошибка загрузки ингредиентов:', error);
       });
 
-    console.log('App: проверяем авторизацию...');
-    dispatch(checkUserAuth());
+    // Проверяем наличие accessToken перед запросом
+    const accessToken = getCookie('accessToken');
+    console.log('App: проверяем токен...', accessToken ? 'есть' : 'нет');
+
+    if (accessToken) {
+      console.log('App: проверяем авторизацию...');
+      dispatch(checkUserAuth());
+    } else {
+      console.log('App: токен отсутствует, пропускаем проверку авторизации');
+    }
   }, [dispatch]);
 
   const handleModalClose = () => {

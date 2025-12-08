@@ -104,13 +104,23 @@ type TNewOrderResponse = TServerResponse<{
   name: string;
 }>;
 
-export const orderBurgerApi = (data: string[]) =>
-  fetchWithRefresh<TNewOrderResponse>(`${URL}/orders`, {
+export const orderBurgerApi = (data: string[]) => {
+  const accessToken = getCookie('accessToken');
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json;charset=utf-8'
+  };
+
+  if (accessToken) {
+    const token = accessToken.startsWith('Bearer ')
+      ? accessToken
+      : `Bearer ${accessToken}`;
+    headers.authorization = token;
+  }
+
+  return fetchWithRefresh<TNewOrderResponse>(`${URL}/orders`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
-    } as HeadersInit,
+    headers,
     body: JSON.stringify({
       ingredients: data
     })
@@ -118,6 +128,7 @@ export const orderBurgerApi = (data: string[]) =>
     if (data?.success) return data;
     return Promise.reject(data);
   });
+};
 
 type TOrderResponse = TServerResponse<{
   orders: TOrder[];
@@ -151,13 +162,14 @@ export const registerUserApi = (data: TRegisterData) =>
     },
     body: JSON.stringify(data)
   })
-    .then((res) => {
-      console.log('registerUserApi: статус ответа', res.status);
-      return checkResponse<TAuthResponse>(res);
-    })
+    .then((res) => checkResponse<TAuthResponse>(res))
     .then((data) => {
-      console.log('registerUserApi: данные ответа', data);
-      if (data?.success) return data;
+      if (data?.success) {
+        const token = data.accessToken.replace('Bearer ', '');
+        setCookie('accessToken', token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        return data;
+      }
       console.error('registerUserApi: success = false', data);
       return Promise.reject(data);
     });
@@ -177,7 +189,12 @@ export const loginUserApi = (data: TLoginData) =>
   })
     .then((res) => checkResponse<TAuthResponse>(res))
     .then((data) => {
-      if (data?.success) return data;
+      if (data?.success) {
+        const token = data.accessToken.replace('Bearer ', '');
+        setCookie('accessToken', token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        return data;
+      }
       return Promise.reject(data);
     });
 
@@ -211,22 +228,43 @@ export const resetPasswordApi = (data: { password: string; token: string }) =>
 
 type TUserResponse = TServerResponse<{ user: TUser }>;
 
-export const getUserApi = () =>
-  fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
-    headers: {
-      authorization: getCookie('accessToken')
-    } as HeadersInit
-  });
+export const getUserApi = () => {
+  const accessToken = getCookie('accessToken');
 
-export const updateUserApi = (user: Partial<TRegisterData>) =>
-  fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
+  const headers: HeadersInit = {};
+
+  if (accessToken) {
+    const token = accessToken.startsWith('Bearer ')
+      ? accessToken
+      : `Bearer ${accessToken}`;
+    headers.authorization = token;
+  }
+
+  return fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
+    headers
+  });
+};
+
+export const updateUserApi = (user: Partial<TRegisterData>) => {
+  const accessToken = getCookie('accessToken');
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json;charset=utf-8'
+  };
+
+  if (accessToken) {
+    const token = accessToken.startsWith('Bearer ')
+      ? accessToken
+      : `Bearer ${accessToken}`;
+    headers.authorization = token;
+  }
+
+  return fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
-    } as HeadersInit,
+    headers,
     body: JSON.stringify(user)
   });
+};
 
 export const logoutApi = () =>
   fetch(`${URL}/auth/logout`, {

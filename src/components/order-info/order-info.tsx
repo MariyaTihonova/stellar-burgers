@@ -1,14 +1,22 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector } from '../../services/store';
+import { useDispatch, useSelector } from '../../services/store';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { getOrderByNumber } from '../../services/slices/currentOrderSlice';
 
 export const OrderInfo: FC = () => {
   const { number } = useParams<{ number: string }>();
-  const { order } = useSelector((state) => state.currentOrder);
+  const dispatch = useDispatch();
+  const { order, isLoading } = useSelector((state) => state.currentOrder);
   const { ingredients } = useSelector((state) => state.ingredients);
+
+  useEffect(() => {
+    if (number && !order) {
+      dispatch(getOrderByNumber(parseInt(number, 10)));
+    }
+  }, [dispatch, number, order]);
 
   const orderInfo = useMemo(() => {
     if (!order || !ingredients.length) return null;
@@ -51,8 +59,16 @@ export const OrderInfo: FC = () => {
     };
   }, [order, ingredients]);
 
-  if (!orderInfo) {
+  if (isLoading) {
     return <Preloader />;
+  }
+
+  if (!orderInfo) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '100px' }}>
+        <h3 className='text text_type_main-large'>Заказ не найден</h3>
+      </div>
+    );
   }
 
   return <OrderInfoUI orderInfo={orderInfo} />;

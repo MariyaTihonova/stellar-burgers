@@ -16,17 +16,7 @@ const initialState: IngredientsState = {
 
 export const getIngredients = createAsyncThunk(
   'ingredients/getIngredients',
-  async () => {
-    console.log('Запрашиваем ингредиенты с API...');
-    try {
-      const response = await getIngredientsApi();
-      console.log('Ингредиенты получены:', response.length);
-      return response;
-    } catch (error) {
-      console.error('Ошибка получения ингредиентов:', error);
-      throw error;
-    }
-  }
+  getIngredientsApi
 );
 
 const ingredientsSlice = createSlice({

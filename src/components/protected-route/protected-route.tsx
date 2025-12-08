@@ -1,6 +1,9 @@
-import { FC, ReactElement } from 'react';
+// src/components/protected-route/protected-route.tsx
+import { FC, ReactElement, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSelector } from '../../services/store';
+import { useSelector, useDispatch } from '../../services/store';
+import { checkUserAuth } from '../../services/slices/userSlice';
+import { Preloader } from '@ui';
 
 interface ProtectedRouteProps {
   onlyUnAuth?: boolean;
@@ -12,7 +15,17 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({
   children
 }) => {
   const location = useLocation();
-  const user = useSelector((state) => state.user.user);
+  const dispatch = useDispatch();
+  const { user, isLoading } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    dispatch(checkUserAuth());
+  }, [dispatch]);
+
+  // Пока идет проверка авторизации, показываем прелоадер
+  if (isLoading) {
+    return <Preloader />;
+  }
 
   if (onlyUnAuth && user) {
     const from = location.state?.from || { pathname: '/' };

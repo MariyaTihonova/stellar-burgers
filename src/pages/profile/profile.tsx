@@ -13,34 +13,63 @@ export const Profile: FC = () => {
     password: ''
   });
 
+  const [initialValues, setInitialValues] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+
   useEffect(() => {
     if (user) {
-      setFormValue({
+      const newValues = {
         name: user.name,
         email: user.email,
         password: ''
-      });
+      };
+      setFormValue(newValues);
+      setInitialValues(newValues);
     }
   }, [user]);
 
-  const isFormChanged =
-    formValue.name !== user?.name ||
-    formValue.email !== user?.email ||
-    formValue.password !== '';
+  // Проверяем, изменились ли поля - возвращаем ТОЛЬКО boolean
+  const isFormChanged = Boolean(
+    formValue.name !== initialValues.name ||
+      formValue.email !== initialValues.email ||
+      (formValue.password && formValue.password.trim() !== '')
+  );
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
 
+    // Собираем только измененные данные
     const updateData: any = {};
-    if (formValue.name !== user?.name) updateData.name = formValue.name;
-    if (formValue.email !== user?.email) updateData.email = formValue.email;
-    if (formValue.password) updateData.password = formValue.password;
 
+    if (formValue.name !== initialValues.name) {
+      updateData.name = formValue.name;
+    }
+
+    if (formValue.email !== initialValues.email) {
+      updateData.email = formValue.email;
+    }
+
+    // Отправляем пароль только если он был введен (не пустая строка)
+    if (formValue.password && formValue.password.trim() !== '') {
+      updateData.password = formValue.password;
+    }
+
+    // Если есть что отправлять
     if (Object.keys(updateData).length > 0) {
       dispatch(updateUser(updateData))
         .unwrap()
         .then(() => {
-          setFormValue((prev) => ({ ...prev, password: '' }));
+          // Сбрасываем пароль после успешного обновления
+          const updatedValues = {
+            name: formValue.name,
+            email: formValue.email,
+            password: ''
+          };
+          setFormValue(updatedValues);
+          setInitialValues(updatedValues);
         })
         .catch(() => {});
     }
@@ -48,9 +77,10 @@ export const Profile: FC = () => {
 
   const handleCancel = (e: SyntheticEvent) => {
     e.preventDefault();
+    // Восстанавливаем исходные значения
     setFormValue({
-      name: user?.name || '',
-      email: user?.email || '',
+      name: initialValues.name,
+      email: initialValues.email,
       password: ''
     });
   };

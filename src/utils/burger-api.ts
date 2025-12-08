@@ -87,17 +87,28 @@ export const getFeedsApi = () =>
       return Promise.reject(data);
     });
 
-export const getOrdersApi = () =>
-  fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
+export const getOrdersApi = () => {
+  const accessToken = getCookie('accessToken');
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json;charset=utf-8'
+  };
+
+  if (accessToken) {
+    const token = accessToken.startsWith('Bearer ')
+      ? accessToken
+      : `Bearer ${accessToken}`;
+    headers.authorization = token;
+  }
+
+  return fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
-    } as HeadersInit
+    headers
   }).then((data) => {
     if (data?.success) return data.orders;
     return Promise.reject(data);
   });
+};
 
 type TNewOrderResponse = TServerResponse<{
   order: TOrder;

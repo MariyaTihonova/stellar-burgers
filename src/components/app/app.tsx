@@ -10,12 +10,15 @@ import {
   ResetPassword,
   Profile,
   ProfileOrders,
+  IngredientDetailsPage,
+  FeedOrderDetailsPage,
+  ProfileOrderDetailsPage,
   NotFound404
 } from '../../pages';
 import { AppHeader } from '../app-header';
-import { IngredientDetails } from '../ingredient-details';
 import { Modal } from '../modal';
 import { OrderInfo } from '../order-info';
+import { IngredientDetails } from '../ingredient-details';
 import { getIngredients } from '../../services/slices/ingredientsSlice';
 import { checkUserAuth } from '../../services/slices/userSlice';
 import ProtectedRoute from '../protected-route/protected-route';
@@ -62,32 +65,8 @@ const App = () => {
       <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
-        <Route
-          path='/feed/:number'
-          element={
-            <div className={styles.detailPageWrap}>
-              <h1
-                className={`${styles.detailHeader} text text_type_digits-default mb-10`}
-              >
-                #{location.pathname.split('/').pop()}
-              </h1>
-              <OrderInfo />
-            </div>
-          }
-        />
-        <Route
-          path='/ingredients/:id'
-          element={
-            <div className={styles.detailPageWrap}>
-              <h1
-                className={`${styles.detailHeader} text text_type_main-large`}
-              >
-                Детали ингредиента
-              </h1>
-              <IngredientDetails />
-            </div>
-          }
-        />
+        <Route path='/feed/:number' element={<FeedOrderDetailsPage />} />
+        <Route path='/ingredients/:id' element={<IngredientDetailsPage />} />
         <Route
           path='/login'
           element={
@@ -140,14 +119,7 @@ const App = () => {
           path='/profile/orders/:number'
           element={
             <ProtectedRoute>
-              <div className={styles.detailPageWrap}>
-                <h1
-                  className={`${styles.detailHeader} text text_type_digits-default mb-10`}
-                >
-                  #{location.pathname.split('/').pop()}
-                </h1>
-                <OrderInfo />
-              </div>
+              <ProfileOrderDetailsPage />
             </ProtectedRoute>
           }
         />

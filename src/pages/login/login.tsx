@@ -3,12 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from '../../services/store';
 import { loginUser, clearError } from '../../services/slices/userSlice';
 import { LoginUI } from '@ui-pages';
-import { useForm } from '../../hooks/useForm';
 
 export const Login: FC = () => {
-  const { values, handleChange } = useForm({ email: '', password: '' });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();

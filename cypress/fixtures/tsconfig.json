@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@api": ["src/utils/burger-api.ts"],
+      "@utils-types": ["src/utils/types.ts"],
+      "@components": ["src/components/index.ts"],
+      "@ui": ["src/components/ui/index.ts"],
+      "@ui-pages": ["src/pages/index.ts"],
+      "@ui-pages/*": ["src/pages/*"],
+      "@/*": ["src/*"]
+    }
+  }
+}

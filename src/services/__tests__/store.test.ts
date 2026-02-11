@@ -1,11 +1,12 @@
 import { describe, expect, test } from '@jest/globals';
-import store from '../store';
+import { rootReducer } from '../rootReducer';
 
-describe('store (rootReducer)', () => {
-  test('должен возвращать корректное начальное состояние', () => {
-    const initialState = store.getState();
-    
-    expect(initialState).toEqual({
+describe('rootReducer', () => {
+  test('должен возвращать корректное начальное состояние при неизвестном экшене', () => {
+    const unknownAction = { type: 'UNKNOWN_ACTION' };
+    const state = rootReducer(undefined, unknownAction);
+
+    expect(state).toEqual({
       ingredients: {
         ingredients: [],
         isLoading: false,

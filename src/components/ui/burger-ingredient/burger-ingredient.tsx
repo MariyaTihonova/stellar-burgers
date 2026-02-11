@@ -15,7 +15,12 @@ export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
 
     return (
       <li className={styles.container}>
-        <div className={styles.article} onClick={handleClick}>
+        <div
+          data-testid={`ingredient-${ingredient.type}`}
+          data-ingredient-id={ingredient._id}
+          className={styles.article}
+          onClick={handleClick}
+        >
           {count && count > 0 && <Counter count={count} />}
           <img
             className={styles.img}

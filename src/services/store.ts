@@ -4,27 +4,10 @@ import {
   useDispatch as dispatchHook,
   useSelector as selectorHook
 } from 'react-redux';
-
-import { ingredientsReducer } from './slices/ingredientsSlice';
-import { burgerConstructorReducer } from './slices/burgerConstructorSlice';
-import { orderReducer } from './slices/orderSlice';
-import { userReducer } from './slices/userSlice';
-import { feedReducer } from './slices/feedSlice';
-import { profileOrdersReducer } from './slices/profileOrdersSlice';
-import { currentIngredientReducer } from './slices/currentIngredientSlice';
-import { currentOrderReducer } from './slices/currentOrderSlice';
+import { rootReducer } from './rootReducer';
 
 const store = configureStore({
-  reducer: {
-    ingredients: ingredientsReducer,
-    burgerConstructor: burgerConstructorReducer,
-    order: orderReducer,
-    user: userReducer,
-    feed: feedReducer,
-    profileOrders: profileOrdersReducer,
-    currentIngredient: currentIngredientReducer,
-    currentOrder: currentOrderReducer
-  },
+  reducer: rootReducer,
   devTools: process.env.NODE_ENV !== 'production',
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

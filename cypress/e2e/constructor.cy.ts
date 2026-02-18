@@ -8,124 +8,113 @@ describe('Конструктор бургеров', () => {
 
     cy.visit('/');
     cy.wait('@getIngredients', { timeout: 20000 });
-
-    // Ждём загрузки ингредиентов на странице
     cy.get('[data-testid^="ingredient-"]', { timeout: 15000 }).should('have.length.at.least', 2);
   });
 
   describe('Добавление ингредиентов', () => {
     it('должен добавлять булку в конструктор', () => {
-      cy.get('[data-testid="ingredient-bun"]').first().as('bun');
+      cy.get('[data-testid="ingredient-bun"]').first()
+        .closest('li')
+        .find('button')
+        .contains('Добавить')
+        .click({ force: true });
 
-      const dataTransfer = new DataTransfer();
-
-      // Имитация полного цикла drag & drop
-      cy.get('@bun').trigger('dragstart', { dataTransfer });
-      cy.get('[data-testid="constructor-bun-top"]')
-        .trigger('dragenter', { dataTransfer })
-        .trigger('dragover', { dataTransfer })
-        .trigger('drop', { dataTransfer })
-        .trigger('dragend', { dataTransfer });
-
-      // Проверяем, что элемент конструктора появился
-      cy.get('[class*=constructor-element]', { timeout: 10000 })
-        .first()
+      cy.get('[data-testid="constructor-bun-top-filled"]', { timeout: 10000 })
         .should('contain', 'Краторная булка');
     });
 
     it('должен добавлять начинку в конструктор', () => {
-      cy.get('[data-testid="ingredient-main"]').first().as('main');
+      cy.get('[data-testid="ingredient-main"]').first()
+        .closest('li')
+        .find('button')
+        .contains('Добавить')
+        .click({ force: true });
 
-      const dataTransfer = new DataTransfer();
-
-      cy.get('@main').trigger('dragstart', { dataTransfer });
-      cy.get('[data-testid="constructor-main"]')
-        .trigger('dragenter', { dataTransfer })
-        .trigger('dragover', { dataTransfer })
-        .trigger('drop', { dataTransfer })
-        .trigger('dragend', { dataTransfer });
-
-      cy.get('[class*=constructor-element]', { timeout: 10000 })
+      cy.get('[data-testid="constructor-element"]', { timeout: 10000 })
         .should('contain', 'Говяжий метеорит');
     });
   });
 
   describe('Модальные окна', () => {
     it('должен открывать модальное окно ингредиента', () => {
-      cy.get('[data-testid="ingredient-bun"]').first().click();
+      cy.get('[data-testid="ingredient-bun"]').first().click({ force: true });
 
-      cy.get('[class*=modal_modal]', { timeout: 10000 })
+      cy.get('[data-testid="modal"]', { timeout: 10000 })
         .should('be.visible')
         .and('contain', 'Краторная булка N-200i');
     });
 
     it('должен закрывать модальное окно по клику на крестик', () => {
-      cy.get('[data-testid="ingredient-bun"]').first().click();
+      cy.get('[data-testid="ingredient-bun"]').first().click({ force: true });
 
-      cy.get('[class*=modal_button] button', { timeout: 10000 })
+      cy.get('[data-testid="modal-close"]', { timeout: 10000 })
         .click({ force: true });
 
-      cy.get('[class*=modal_modal]').should('not.exist');
+      cy.url().should('eq', 'http://localhost:4000/');
+      cy.get('[data-testid="modal"]').should('not.exist');
     });
   });
 
   describe('Создание заказа', () => {
-    beforeEach(() => {
-      // AccessToken в cookies
-      cy.setCookie('accessToken', 'Bearer test-access-token');
-      // RefreshToken в localStorage
-      cy.window().then((win) => {
-        win.localStorage.setItem('refreshToken', 'test-refresh-token');
-      });
-
-      // Добавляем булку
-      const dt1 = new DataTransfer();
-      cy.get('[data-testid="ingredient-bun"]').first()
-        .trigger('dragstart', { dataTransfer: dt1 });
-      cy.get('[data-testid="constructor-bun-top"]')
-        .trigger('dragenter', { dataTransfer: dt1 })
-        .trigger('dragover', { dataTransfer: dt1 })
-        .trigger('drop', { dataTransfer: dt1 })
-        .trigger('dragend', { dataTransfer: dt1 });
-
-      // Добавляем начинку
-      const dt2 = new DataTransfer();
-      cy.get('[data-testid="ingredient-main"]').first()
-        .trigger('dragstart', { dataTransfer: dt2 });
-      cy.get('[data-testid="constructor-main"]')
-        .trigger('dragenter', { dataTransfer: dt2 })
-        .trigger('dragover', { dataTransfer: dt2 })
-        .trigger('drop', { dataTransfer: dt2 })
-        .trigger('dragend', { dataTransfer: dt2 });
-
-      // Убедимся, что конструктор не пустой
-      cy.get('[class*=constructor-element]', { timeout: 10000 })
-        .should('have.length.at.least', 2); // булка + начинка
+  beforeEach(() => {
+    cy.setCookie('accessToken', 'Bearer test-access-token');
+    cy.window().then((win) => {
+      win.localStorage.setItem('refreshToken', 'test-refresh-token');
     });
 
-    afterEach(() => {
-      cy.clearCookie('accessToken');
-      cy.window().then((win) => win.localStorage.removeItem('refreshToken'));
-    });
+    // Перезагружаем страницу, чтобы применились токены
+    cy.reload();
+    cy.wait('@getIngredients', { timeout: 20000 });
+    cy.get('[data-testid^="ingredient-"]', { timeout: 15000 }).should('have.length.at.least', 2);
 
-    it('должен создавать заказ, показывать номер и очищать конструктор', () => {
-      // Кнопка должна быть активна
-      cy.get('button').contains('Оформить заказ')
-        .should('be.visible')
-        .and('not.be.disabled')
-        .click();
+    // Ждём появления имени пользователя в шапке
+    cy.contains('Test User', { timeout: 15000 }).should('be.visible');
 
-      cy.wait('@createOrder', { timeout: 20000 });
+    // Добавляем булку
+    cy.get('[data-testid="ingredient-bun"]').first()
+      .closest('li')
+      .find('button')
+      .contains('Добавить')
+      .click({ force: true });
 
-      cy.get('[class*=modal_modal]', { timeout: 10000 }).should('be.visible');
-      cy.get('[class*=order-details_title]').should('contain', '12345');
+    cy.get('[data-testid="constructor-bun-top-filled"]', { timeout: 10000 })
+      .should('contain', 'Краторная булка');
 
-      cy.get('[class*=modal_button] button').click({ force: true });
-      cy.get('[class*=modal_modal]').should('not.exist');
+    // Добавляем начинку
+    cy.get('[data-testid="ingredient-main"]').first()
+      .closest('li')
+      .find('button')
+      .contains('Добавить')
+      .click({ force: true });
 
-      // Проверяем очистку конструктора
-      cy.get('[data-testid="constructor-bun-top"]').should('contain', 'Выберите булки');
-      cy.get('[data-testid="constructor-main"]').should('contain', 'Выберите начинку');
-    });
+    cy.get('[data-testid="constructor-element"]', { timeout: 10000 })
+      .should('have.length.at.least', 1);
+
+    cy.wait(500);
   });
+
+  afterEach(() => {
+    cy.clearCookie('accessToken');
+    cy.window().then((win) => win.localStorage.removeItem('refreshToken'));
+  });
+
+  it('должен создавать заказ, показывать номер и очищать конструктор', () => {
+    cy.get('button').contains('Оформить заказ')
+      .should('be.visible')
+      .and('not.be.disabled')
+      .click({ force: true });
+
+    cy.wait('@createOrder', { timeout: 20000 });
+
+    cy.get('[data-testid="modal"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid="order-number"]').should('contain', '12345');
+
+    cy.get('[data-testid="modal-close"]').click({ force: true });
+    cy.get('[data-testid="modal"]').should('not.exist');
+
+    // Проверяем очистку конструктора
+    cy.get('[data-testid="constructor-bun-top"]').should('contain', 'Выберите булки');
+    cy.get('[data-testid="constructor-main"]').should('contain', 'Выберите начинку');
+  });
+});
 });

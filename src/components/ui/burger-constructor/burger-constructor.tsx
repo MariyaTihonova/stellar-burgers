@@ -21,7 +21,10 @@ export const BurgerConstructorUI: FC<BurgerConstructorUIProps> = ({
   <section className={styles.burger_constructor}>
     {/* Верхняя булка */}
     {constructorItems.bun ? (
-      <div className={`${styles.element} mb-4 mr-4`}>
+      <div
+        data-testid='constructor-bun-top-filled'
+        className={`${styles.element} mb-4 mr-4`}
+      >
         <ConstructorElement
           type='top'
           isLocked

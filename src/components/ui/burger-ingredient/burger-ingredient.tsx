@@ -34,6 +34,7 @@ export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
           <p className={`text text_type_main-default ${styles.text}`}>{name}</p>
         </div>
         <AddButton
+          data-testid='add-button'
           text='Добавить'
           onClick={(e) => {
             e.stopPropagation();
